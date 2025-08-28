@@ -34,6 +34,17 @@ Param (
 	$hour
 )
 
+function Parse-RemoteEndpoint {
+    param ([string]$line)
+
+    $matches = @($line -split '\s+' | Where-Object { $_ -match '^\d{1,3}(\.\d{1,3}){3}:\d+$' })
+    if ($matches.Count -ge 2) {
+        return $matches[1]  # 第二個 IP:Port（remote）
+    } else {
+        return $null
+    }
+}
+
 # 狀態檔案路徑
 $file = [System.IO.Path]::GetTempPath() + "reconnect_${ip}_${port}.txt"
 
@@ -47,9 +58,17 @@ if (-not (Test-Path $file)) {
 $expired = ((Get-Date) - (Get-Item $file).LastWriteTime) -gt [TimeSpan]::FromHours($hour)
 
 # 取得目前所有 ESTABLISHED 的遠端 endpoint（IP:port）
-$currentEndpoints = @(netstat -tn | Select-String "${ip}:${port}" | Select-String ESTABLISHED | ForEach-Object {
-	($_ -split '\s+')[-2]  # 取得 remote IP:port
-})
+$currentEndpoints = @(
+	netstat -tn |
+	Select-String ESTABLISHED |
+	ForEach-Object {
+		$line = $_.ToString()
+		if ($line -match "${ip}:${port}") {
+			Parse-RemoteEndpoint $line
+		}
+	}
+)
+
 
 # 如果目前沒有任何連線
 if (-not $currentEndpoints -or $currentEndpoints.Count -eq 0) {
