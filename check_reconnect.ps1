@@ -19,7 +19,7 @@ check_reconnect 10.2.8.143 6201 6
 check_reconnect -ip 10.2.8.143 -port 6201 -hour 6
 
 .NOTES
-version : 2025/08/26
+version : 2025/08/29
 
 .LINK
 https://github.com/hytcloud/naemon-connection-monitor.git
@@ -79,7 +79,7 @@ if (-not $currentEndpoints -or $currentEndpoints.Count -eq 0) {
 # 如果狀態檔過期，重設為目前連線
 if ($expired) {
 	Set-Content -Path $file -Value ($currentEndpoints -join "`n") -Encoding UTF8
-	Write-Output "OK - 第一次確認 ${ip}:${port}"
+	Write-Output "OK - 第一次確認 $($currentEndpoints -join ', ')"
 	exit 0
 }
 
@@ -90,10 +90,10 @@ $previousEndpoints = @(Get-Content -Path $file -Encoding UTF8)
 $matched = ($currentEndpoints | Where-Object { $previousEndpoints -contains $_ }).Count
 
 if ($matched -eq $currentEndpoints.Count) {
-	Write-Output "OK - 未重連 ${ip}:${port}"
+	Write-Output "OK - 未重連 $($currentEndpoints -join ', ')"
 	exit 0
 } else {
 	Set-Content -Path $file -Value ($currentEndpoints -join "`n") -Encoding UTF8
-	Write-Output "CRITICAL - 已重連 ${ip}:${port}"
+	Write-Output "CRITICAL - 已重連 $($currentEndpoints -join ', ')"
 	exit 2
 }
