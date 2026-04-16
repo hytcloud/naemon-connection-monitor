@@ -19,7 +19,7 @@ check_reconnect 10.2.8.143 6201 6
 check_reconnect -ip 10.2.8.143 -port 6201 -hour 6
 
 .NOTES
-version : 2025/11/05
+version : 2026/04/16
 
 .LINK
 https://github.com/hytcloud/naemon-connection-monitor.git
@@ -95,6 +95,6 @@ if ($changed) {
 	exit 2
 }
 else {
-	Write-Output "OK - 未重連 $($currentEndpoints -join ', ')"
+	Write-Output "OK - $($currentEndpoints -join ', ')"
 	exit 0
 }
