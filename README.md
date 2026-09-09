@@ -39,7 +39,7 @@ Checks how many active inbound connections exist to the specified IP and port(s)
 
 - If -count is not specified, the script performs a simple connection check and returns OK
 - If -mode is omitted, comparison defaults to ne (not equal)
-- Version: 2025/10/17
+- Version: 2026/09/09
 - [GitHub Repo](https://github.com/hytcloud/naemon-connection-monitor.git)
 
 ## check_reconnect.ps1
@@ -64,5 +64,5 @@ Detects whether a specific IP:Port has reconnected by comparing current connecti
 
 - Stores connection state in a temporary file for comparison.
 - Reconnection is detected if a previously missing connection reappears within the expiration window.
-- Version: 2025/08/26
+- Version: 2026/09/09
 - [GitHub Repo](https://github.com/hytcloud/naemon-connection-monitor.git)

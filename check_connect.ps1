@@ -33,7 +33,7 @@ check_connect abc123 1433 2 lt
 check_connect -command abc123 -ports 1433 -count 2 -mode lt
 
 .NOTES
-version : 2025/10/17
+version : 2026/09/09
 
 .LINK
 https://github.com/hytcloud/naemon-connection-monitor.git
@@ -42,50 +42,66 @@ https://github.com/hytcloud/naemon-connection-monitor.git
 Param (
 	[Parameter(Mandatory = $true, Position = 0)]
 	[string]$ip,
+
 	[Parameter(Mandatory = $true, Position = 1)]
 	[string[]]$ports,
+
 	[Parameter(Mandatory = $false, Position = 2)]
 	[int]$count,
+
 	[Parameter(Mandatory = $false, Position = 3)]
+	[ValidateSet('ne', 'lt', 'gt')]
 	[string]$mode = 'ne'
 )
 
 $result = 0
 
-if ($ports.Count -eq 1 -and $ports[0] -match ",") {
-	$ports = $ports[0] -split "," | ForEach-Object { $_.Trim() }
+if ($ports.Count -eq 1 -and $ports[0] -match ',') {
+	$ports = $ports[0] -split ',' | ForEach-Object { $_.Trim() }
 }
 
 if ($ip -match '^\d{1,3}(\.\d{1,3}){3}$') {
 	foreach ($port in $ports) {
-		$result += @(netstat -tn | Select-String -Pattern "\s+${ip}:${port}\s+" | Select-String ESTABLISHED).count
+		$result += @(netstat -tn | Select-String -Pattern "\s+${ip}:${port}\s+" | Select-String -Pattern 'ESTABLISHED').Count
 	}
 }
 else {
 	$upid = (Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like "*$ip*" } | Select-Object -First 1).ProcessId
 
 	if (-not $upid) {
-		Write-Host "CRITICAL - ${ip} not found"
+		$portsText = $ports -join ','
+		$perfData = 'connections=0;;;;'
+
+		Write-Host "CRITICAL - ${ip} not found | $perfData"
 		exit 2
 	}
 
 	foreach ($port in $ports) {
-		$result += @(netstat -no -p TCP | Select-String ":${port}\s+ESTABLISHED\s+${upid}`$").Count
+		$result += @(netstat -no -p TCP | Select-String -Pattern ":${port}\s+ESTABLISHED\s+${upid}`$").Count
 	}
 }
 
-$portsText = $ports -join ","
+$portsText = $ports -join ','
+
 $triggered = switch ($mode) {
-	'gt' { $count -gt $result }
-	'lt' { $count -lt $result }
-	default { $count -ne $result }
+	'gt' {
+		$count -gt $result
+	}
+	'lt' {
+		$count -lt $result
+	}
+	default {
+		$count -ne $result
+	}
 }
 
-if ($PSBoundParameters.ContainsKey('count') -And $triggered) {
-	Write-Host "CRITICAL - ${ip}:${portsText} 連線數 $result"
+$perfData = "connections=$result;;;;"
+
+if ($PSBoundParameters.ContainsKey('count') -and $triggered) {
+	Write-Host "CRITICAL - ${ip}:${portsText} 連線數 $result | $perfData"
 	exit 2
 }
 else {
-	Write-Host "OK - ${ip}:${portsText} 連線數 $result"
+	Write-Host "OK - ${ip}:${portsText} 連線數 $result | $perfData"
 	exit 0
 }

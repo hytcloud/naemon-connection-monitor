@@ -19,7 +19,7 @@ check_reconnect 10.2.8.143 6201 6
 check_reconnect -ip 10.2.8.143 -port 6201 -hour 6
 
 .NOTES
-version : 2026/04/16
+version : 2026/09/09
 
 .LINK
 https://github.com/hytcloud/naemon-connection-monitor.git
@@ -70,16 +70,20 @@ $currentEndpoints = @(
 	}
 )
 
+# 目前連線數量及 Naemon performance data
+$connectionCount = $currentEndpoints.Count
+$performanceData = "connections=${connectionCount};;;0;"
+
 # 如果目前沒有任何連線
 if (-not $currentEndpoints -or $currentEndpoints.Count -eq 0) {
-	Write-Output "CRITICAL - 無連線 ${ip}:${port}"
+	Write-Output "CRITICAL - 無連線 ${ip}:${port} | $performanceData"
 	exit 2
 }
 
 # 如果狀態檔過期，重設為目前連線
 if ($expired) {
 	Set-Content -Path $file -Value ($currentEndpoints -join "`n") -Encoding UTF8
-	Write-Output "OK - 第一次確認 $($currentEndpoints -join ', ')"
+	Write-Output "OK - 第一次確認 $($currentEndpoints -join ', ') | $performanceData"
 	exit 0
 }
 
@@ -91,10 +95,10 @@ $changed = ($currentEndpoints.Count -ne $previousEndpoints.Count) -or ($currentE
 
 if ($changed) {
 	Set-Content -Path $file -Value ($currentEndpoints -join "`n") -Encoding UTF8
-	Write-Output "CRITICAL - 已重連 $($currentEndpoints -join ', ')"
+	Write-Output "CRITICAL - 已重連 $($currentEndpoints -join ', ') | $performanceData"
 	exit 2
 }
 else {
-	Write-Output "OK - $($currentEndpoints -join ', ')"
+	Write-Output "OK - $($currentEndpoints -join ', ') | $performanceData"
 	exit 0
 }
