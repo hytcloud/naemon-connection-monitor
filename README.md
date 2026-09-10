@@ -33,7 +33,7 @@ Checks how many active inbound connections exist to the specified IP and port(s)
 | `-ip` | Target IP address or process command (Windows only) |
 | `-ports` | Target port number(s), comma-separated |
 | `-count` | Expected number of inbound connections (used for threshold comparison) |
-| `-mode` | Comparison mode:<br>• `gt` → OK if actual count is **greater than or equal to** expected<br>• `lt` → OK if actual count is **less than or equal to** expected<br>• `ne` → OK if actual count is **exactly equal** to expected (default) |
+| `-mode` | Comparison mode:<br>• `gt` → OK if actual count is **greater than or equal to** expected<br>• `lt` → OK if actual count is **less than or equal to** expected<br>• `eq` → OK if actual count is **exactly equal** to expected (default) |
 
 **Notes**
 

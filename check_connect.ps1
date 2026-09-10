@@ -50,8 +50,7 @@ Param (
 	[int]$count,
 
 	[Parameter(Mandatory = $false, Position = 3)]
-	[ValidateSet('ne', 'lt', 'gt')]
-	[string]$mode = 'ne'
+	[string]$mode = 'eq'
 )
 
 $result = 0
